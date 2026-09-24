@@ -2,43 +2,76 @@ from ursina import *
 
 app = Ursina()
 
-# --- МЕНЮ РОБЛОКСА ---
-menu_parent = Entity(parent=camera.ui)
+# --- СЛОЙ 1: ГЛАВНОЕ МЕНЮ (Список игр) ---
+main_menu = Entity(parent=camera.ui)
 
-# Заголовок меню
-title = Text(text='ROBLOX CLONE', origin=(0, 0), position=(0, 0.4), scale=2, color=color.orange, parent=menu_parent)
+title_main = Text(text='MINI ROBLOX', origin=(0, 0), position=(0, 0.4), scale=2.5, color=color.orange, parent=main_menu)
 
-# Функция запуска первой игры ("Бета игра")
-def start_beta_game():
-    menu_parent.enabled = False  # Скрываем меню
-    game_world.enabled = True    # Показываем 3D-мир
-    player.enabled = True
-    ground.enabled = True
-    info_text.enabled = True
+def open_game_page():
+    main_menu.enabled = False      # Скрываем главное меню
+    game_page.enabled = True       # Показываем страницу плейса
 
-# Кнопка запуска первой игры
-play_button = Button(
-    text='Бета игра',
+# Кнопка выбора нашей "Беты игры" в списке
+beta_game_btn = Button(
+    text='Бета игра (Плейс #1)',
     color=color.azure,
-    scale=(0.4, 0.1),
+    scale=(0.5, 0.1),
     position=(0, 0.1),
-    parent=menu_parent,
-    on_click=start_beta_game
+    parent=main_menu,
+    on_click=open_game_page
 )
 
-# --- 3D-МИР ИГРЫ (скрыт до нажатия кнопки) ---
+
+# --- СЛОЙ 2: СТРАНИЦА ОПИСАНИЯ ПЛЕЙСА (Как в Roblox) ---
+game_page = Entity(parent=camera.ui, enabled=False)
+
+# Название плейса вверху
+game_title_text = Text(text='БЕТА ИГРА', origin=(0, 0), position=(0, 0.35), scale=2, color=color.yellow, parent=game_page)
+
+# Ник создателя сервера
+creator_text = Text(text='Создатель: YouDeveloper', origin=(0, 0), position=(0, 0.25), scale=1, color=color.light_gray, parent=game_page)
+
+# Описание игры
+desc_text = Text(text='Добро пожаловать в первую тестовую игру!\nИсследуйте мир и тестируйте механику.', origin=(0, 0), position=(0, 0.1), scale=1, color=color.white, parent=game_page)
+
+def start_actual_game():
+    game_page.enabled = False    # Скрываем страницу плейса
+    game_world.enabled = True    # Включаем 3D-мир
+
+# Большая зеленая кнопка «ИГРАТЬ» (Play)
+play_game_btn = Button(
+    text='ИГРАТЬ',
+    color=color.green,
+    scale=(0.4, 0.12),
+    position=(0, -0.1),
+    parent=game_page,
+    on_click=start_actual_game
+)
+
+def back_to_main():
+    game_page.enabled = False
+    main_menu.enabled = True
+
+# Кнопка «Назад»
+back_btn = Button(
+    text='Назад',
+    color=color.red,
+    scale=(0.3, 0.08),
+    position=(0, -0.3),
+    parent=game_page,
+    on_click=back_to_main
+)
+
+
+# --- СЛОЙ 3: САМ 3D-МИР (ИГРА) ---
 game_world = Entity(enabled=False)
 
-# Игрок
-player = Entity(model='cube', color=color.red, scale=(1, 2, 1), position=(0, 1, 0), parent=game_world, enabled=False)
+player = Entity(model='cube', color=color.red, scale=(1, 2, 1), position=(0, 1, 0), parent=game_world)
+ground = Entity(model='plane', color=color.green, scale=(30, 1, 30), texture='white_cube', parent=game_world)
 
-# Земля
-ground = Entity(model='plane', color=color.green, scale=(30, 1, 30), texture='white_cube', parent=game_world, enabled=False)
+hud_text = Text(text='W, A, S,D - Бегать\nНажмите ESC для выхода', position=(-0.85, 0.45), scale=1, parent=game_world)
 
-# Подсказка в игре
-info_text = Text(text='W, A, S, D - Движение\nНажми ESC для выхода', position=(-0.8, 0.45), scale=1, parent=game_world, enabled=False)
-
-# Управление игроком
+# Логика движения игрока
 def update():
     if game_world.enabled:
         if held_keys['w']:
